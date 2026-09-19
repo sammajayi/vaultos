@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+/* VaultOS design tokens. Mineral ground, slate ink, and four state colours that each mean one thing:
+   cobalt = you act, verdigris = passed, brass = owner must decide, oxblood = refused. */
+@theme inline {
+  --color-ground: #eceff0;
+  --color-panel: #f9fafa;
+  --color-sunk: #e2e7e8;
+  --color-ink: #172033;
+  --color-steel: #566577;
+  --color-rule: #cfd7d8;
+  --color-seal: #24439b;
+  --color-seal-dark: #1a3277;
+  --color-seal-tint: #dfe6f6;
+  --color-verdigris: #17705a;
+  --color-verdigris-tint: #d8ede6;
+  --color-brass: #8f6209;
+  --color-brass-tint: #f3e6c8;
+  --color-oxblood: #a2352b;
+  --color-oxblood-tint: #f3d9d5;
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+:root { color-scheme: light; }
+
+html, body { background: var(--color-ground); color: var(--color-ink); }
+body { font-family: var(--font-sans); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+
+/* Amounts line up in columns. */
+.num { font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; }
+
+:focus-visible { outline: 2px solid var(--color-seal); outline-offset: 2px; border-radius: 4px; }
+
+::selection { background: var(--color-seal-tint); }
+
+/* ---- Tumbler lock: pins settle when a decision arrives ---- */
+.pin { transition: transform 620ms cubic-bezier(0.3, 1.4, 0.5, 1); transition-delay: calc(var(--i) * 55ms); }
+.pin[data-set="false"] { transform: translateY(-16px); }
+.bolt { transition: transform 700ms cubic-bezier(0.6, 0, 0.2, 1) 560ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pin, .bolt { transition: none; transition-delay: 0ms; }
+}
+
+/* Native dialog used as a side drawer. */
+dialog.drawer {
+  margin: 0 0 0 auto; height: 100dvh; max-height: 100dvh; width: min(560px, 100vw);
+  border: 0; padding: 0; background: var(--color-panel); color: var(--color-ink);
+  box-shadow: -1px 0 0 var(--color-rule);
+}
+dialog.drawer::backdrop { background: rgba(23, 32, 51, 0.32); }
+
+/* Two-column checklist collapses on phones. */
+@media (max-width: 640px) { .checklist { grid-template-columns: 1fr !important; } }
