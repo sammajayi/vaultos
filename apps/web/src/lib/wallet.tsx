@@ -122,7 +122,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           }
         }
         const issuedAt = new Date().toISOString();
-        const signature = await client.signMessage({ account, message: loginMessage(account, issuedAt) });
+        const signature = await client.signMessage({ account: client.account!, message: loginMessage(account, issuedAt) });
         const res = await api<{ token: string }>("/auth/login", { body: { address: account, issuedAt, signature } });
         setToken(res.token);
         setWalletClient(client);
