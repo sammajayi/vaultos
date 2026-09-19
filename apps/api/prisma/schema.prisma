@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Money authority lives on-chain. These tables hold application state (names, invoices, decisions)
+// and a cache of on-chain state; the indexer rebuilds `transactions` from contract events.
+
+model User {
+  id            String     @id @default(cuid())
+  walletAddress String     @unique
+  createdAt     DateTime   @default(now())
+  treasuries    Treasury[]
+
+  @@map("users")
+}
+
+model Treasury {
+  id              String           @id @default(cuid())
+  address         String           @unique
+  ownerId         String
+  owner           User             @relation(fields: [ownerId], references: [id])
+  network         String
+  deployBlock     BigInt           @default(0)
+  lastSyncedBlock BigInt           @default(0)
+  createdAt       DateTime         @default(now())
+  agents          Agent[]
+  recipients      Recipient[]
+  policy          Policy?
+  invoices        Invoice[]
+  paymentRequests PaymentRequest[]
+  transactions    Transaction[]
+  auditLogs       AuditLog[]
+
+  @@map("treasuries")
+}
+
+model Agent {
+  id         String   @id @default(cuid())
+  treasuryId String
+  treasury   Treasury @relation(fields: [treasuryId], references: [id], onDelete: Cascade)
+  name       String
+  address    String
+  status     String   @default("ACTIVE") // mirrors AgentRegistry state on-chain
+  createdAt  DateTime @default(now())
+
+  @@unique([treasuryId, address])
+  @@map("agents")
+}
+
+model Recipient {
+  id            String    @id @default(cuid())
+  treasuryId    String
+  treasury      Treasury  @relation(fields: [treasuryId], references: [id], onDelete: Cascade)
+  name          String
+  walletAddress String
+  category      String
+  status        String    @default("PENDING") // PENDING (not yet on-chain) | APPROVED | REMOVED — derived from the chain
+  createdAt     DateTime  @default(now())
+  invoices      Invoice[]
+
+  @@unique([treasuryId, walletAddress])
+  @@map("recipients")
+}
+
+model Policy {
+  id                   String   @id @default(cuid())
+  treasuryId           String   @unique
+  treasury             Treasury @relation(fields: [treasuryId], references: [id], onDelete: Cascade)
+  maxTransactionAmount BigInt
+  dailyLimit           BigInt
+  monthlyLimit         BigInt
+  approvalThreshold    BigInt
+  expiresAt            BigInt
+  active               Boolean
+  updatedAt            DateTime @updatedAt
+
+  @@map("policies")
+}
+
+model Invoice {
+  id             String          @id @default(cuid())
+  treasuryId     String
+  treasury       Treasury        @relation(fields: [treasuryId], references: [id], onDelete: Cascade)
+  recipientId    String?
+  recipient      Recipient?      @relation(fields: [recipientId], references: [id])
+  supplierName   String
+  supplierAddress String
+  invoiceNumber  String
+  chainInvoiceId String // keccak(treasury|supplier|number) — the replay-protection key on-chain
+  amount         BigInt // 6-decimal USDC base units
+  currency       String          @default("USDC")
+  description    String          @default("")
+  dueDate        String
+  status         String          @default("PENDING")
+  agentDecision  Json?
+  failureReason  String?
+  createdAt      DateTime        @default(now())
+  paymentRequest PaymentRequest?
+
+  @@unique([treasuryId, chainInvoiceId])
+  @@map("invoices")
+}
+
+model PaymentRequest {
+  id               String   @id @default(cuid())
+  treasuryId       String
+  treasury         Treasury @relation(fields: [treasuryId], references: [id], onDelete: Cascade)
+  invoiceId        String   @unique
+  invoice          Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  onchainRequestId BigInt?
+  amount           BigInt
+  recipient        String
+  agentDecision    String
+  approvalRequired Boolean
+  status           String // PENDING | EXECUTED | REJECTED
+  requestTxHash    String?
+  executionTxHash  String?
+  createdAt        DateTime @default(now())
+
+  @@map("payment_requests")
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  treasuryId    String
+  treasury      Treasury @relation(fields: [treasuryId], references: [id], onDelete: Cascade)
+  type          String // DEPOSIT | WITHDRAWAL | PAYMENT | REQUEST | REJECTION | BLOCKED | PAUSE | UNPAUSE | POLICY | RECIPIENT | AGENT
+  amount        BigInt?
+  recipient     String?
+  recipientName String?
+  invoiceRef    String? // human invoice number when known
+  requestId     BigInt?
+  agent         String?
+  policyNote    String?
+  txHash        String?
+  logIndex      Int?
+  blockNumber   BigInt?
+  status        String   @default("CONFIRMED") // CONFIRMED | PENDING | BLOCKED
+  timestamp     DateTime @default(now())
+
+  @@unique([txHash, logIndex])
+  @@index([treasuryId, timestamp])
+  @@map("transactions")
+}
+
+// PRD §32 debug trail: Invoice → Agent decision → Policy result → Contract request → Settlement.
+model AuditLog {
+  id         String   @id @default(cuid())
+  treasuryId String
+  treasury   Treasury @relation(fields: [treasuryId], references: [id], onDelete: Cascade)
+  invoiceId  String?
+  stage      String
+  detail     Json
+  createdAt  DateTime @default(now())
+
+  @@index([treasuryId, invoiceId])
+  @@map("audit_logs")
+}

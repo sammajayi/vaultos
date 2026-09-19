@@ -1,0 +1,30 @@
+{
+  "name": "@vaultos/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "db:push": "prisma db push --skip-generate && prisma generate",
+    "typecheck": "tsc --noEmit -p .",
+    "test": "tsx --test src/*.test.ts",
+    "e2e": "tsx src/e2e.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.0",
+    "@prisma/client": "6.19.3",
+    "@vaultos/agent": "workspace:*",
+    "@vaultos/sdk": "workspace:*",
+    "@vaultos/types": "workspace:*",
+    "dotenv": "^17.0.0",
+    "fastify": "^5.0.0",
+    "viem": "^2.21.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "prisma": "6.19.3",
+    "tsx": "^4.19.0"
+  }
+}
