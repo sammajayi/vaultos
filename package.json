@@ -1,0 +1,21 @@
+{
+  "name": "vaultos",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Autonomous treasury on Arc: AI agents propose payments, smart contracts decide.",
+  "packageManager": "pnpm@11.5.2",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "contracts:build": "forge build",
+    "contracts:test": "forge test -vv",
+    "db:push": "pnpm --filter @vaultos/api db:push",
+    "seed": "pnpm --filter @vaultos/api seed"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0",
+    "typescript": "^5.7.0"
+  }
+}
