@@ -37,3 +37,4 @@ export async function analyzeInvoice(
   const { reason, source } = await explainDecision(invoice, context, decision);
   return { invoice, invoiceId, context, decision: { ...decision, reason }, explanationSource: source };
 }
+export * from "./research";

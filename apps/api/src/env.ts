@@ -17,6 +17,8 @@ const Env = z.object({
   ARC_USDC_ADDRESS: addr,
   TREASURY_FACTORY_ADDRESS: addr,
   AGENT_PRIVATE_KEY: z.string().regex(/^0x[a-fA-F0-9]{64}$/, "AGENT_PRIVATE_KEY must be a 0x-prefixed 32-byte hex key"),
+  // Public address of the demo Research Agent (it only receives payments; no key needed here).
+  RESEARCH_AGENT_ADDRESS: addr.optional().or(z.literal("").transform(() => undefined)),
   // Lets a demo "attack" the treasury through the real contract (dry-run, never sent).
   ENABLE_ATTACK_SIMULATION: z.enum(["true", "false"]).default("true"),
 });

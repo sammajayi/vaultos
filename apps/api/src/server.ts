@@ -5,6 +5,7 @@ import { db } from "./db";
 import { AGENT_ADDRESS, networkName } from "./chain";
 import { coreRoutes } from "./routes/core";
 import { invoiceRoutes } from "./routes/invoices";
+import { agentRoutes } from "./routes/agent";
 
 const app = Fastify({ logger: { level: "info" } });
 await app.register(cors, { origin: env.WEB_ORIGIN.split(","), allowedHeaders: ["content-type", "authorization"] });
@@ -17,6 +18,7 @@ app.setErrorHandler((err: Error & { statusCode?: number }, _req, reply) => {
 
 await app.register(coreRoutes);
 await app.register(invoiceRoutes);
+await app.register(agentRoutes);
 
 await db.$connect();
 await app.listen({ port: env.API_PORT, host: "0.0.0.0" });

@@ -31,6 +31,8 @@ export async function coreRoutes(app: FastifyInstance) {
     usdc: USDC,
     agentAddress: AGENT_ADDRESS,
     attackSimulation: env.ENABLE_ATTACK_SIMULATION === "true",
+    researchAgent: env.RESEARCH_AGENT_ADDRESS ?? null,
+    researchPrice: "0.25",
   }));
 
   app.post("/auth/login", async (req, reply) => {

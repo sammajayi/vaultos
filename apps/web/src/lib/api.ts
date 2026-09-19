@@ -9,6 +9,8 @@ export type AppConfig = {
   usdc: `0x${string}`;
   agentAddress: `0x${string}`;
   attackSimulation: boolean;
+  researchAgent: `0x${string}` | null;
+  researchPrice: string;
 };
 
 export class ApiError extends Error {
