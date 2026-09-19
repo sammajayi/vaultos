@@ -112,7 +112,7 @@ export const TreasuryAbi = [
     "name": "agents",
     "inputs": [
       {
-        "name": "",
+        "name": "agent",
         "type": "address",
         "internalType": "address"
       }
@@ -187,6 +187,19 @@ export const TreasuryAbi = [
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "engine",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract IPolicyEngine"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -292,7 +305,7 @@ export const TreasuryAbi = [
     "name": "isRecipient",
     "inputs": [
       {
-        "name": "",
+        "name": "recipient",
         "type": "address",
         "internalType": "address"
       }
@@ -486,7 +499,7 @@ export const TreasuryAbi = [
     "name": "recipientMetadata",
     "inputs": [
       {
-        "name": "",
+        "name": "recipient",
         "type": "address",
         "internalType": "address"
       }

@@ -7,7 +7,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = resolve(root, "packages/sdk/src/abi");
 mkdirSync(outDir, { recursive: true });
 
-for (const name of ["Treasury", "TreasuryFactory"]) {
+for (const name of ["Treasury", "TreasuryFactory", "PolicyEngine"]) {
   const artifact = JSON.parse(readFileSync(resolve(root, `out/${name}.sol/${name}.json`), "utf8"));
   writeFileSync(
     resolve(outDir, `${name}.ts`),
