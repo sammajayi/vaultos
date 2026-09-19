@@ -1,0 +1,16 @@
+{
+  "name": "@vaultos/sdk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "abi": "node ../../scripts/export-abi.mjs",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@vaultos/types": "workspace:*",
+    "viem": "^2.21.0"
+  }
+}
