@@ -4,7 +4,7 @@
 
 | Layer | Guarantee |
 | --- | --- |
-| `Treasury.sol` | Agent may call only `executePayment` / `requestPayment`. Every call checks: agent authorized and unexpired, treasury not paused, policy active and unexpired, recipient allowlisted, amount ≤ per-payment cap, invoice unused, balance sufficient; autonomous payments also check daily/monthly limits and the autonomous threshold. |
+| `Treasury.sol` + `PolicyEngine.sol` | The engine evaluates the rules and only its Treasury can change them. Agent may call only `executePayment` / `requestPayment`. Every call checks: agent authorized and unexpired, treasury not paused, policy active and unexpired, recipient allowlisted, amount ≤ per-payment cap, invoice unused, balance sufficient; autonomous payments also check daily/monthly limits and the autonomous threshold. |
 | Owner-only | deposit-side config, withdraw, add/remove recipient, authorize/revoke agent, policy, pause, approve/reject. Withdraw works while paused. |
 | Agent key | Separate wallet, server-side only. The contract rejects an agent equal to the owner. |
 | Agent logic | Decision is deterministic from on-chain state. Claude (optional) rewrites the explanation only, receives invoice text as untrusted JSON, and cannot alter the decision. |

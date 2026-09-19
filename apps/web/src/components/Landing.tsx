@@ -7,7 +7,7 @@ import { Tumblers, pinsFromCodes } from "./Tumblers";
 
 const SCENARIOS = [
   { id: "aws", title: "AWS", amount: "$750", note: "Approved supplier, within limits", codes: [] as string[] },
-  { id: "eq", title: "Supplier A", amount: "$4,500", note: "Approved supplier, above the agent's limit", codes: ["REQUIRES_HUMAN_APPROVAL"] },
+  { id: "eq", title: "Supplier A", amount: "$3,500", note: "Approved supplier, above the agent's limit", codes: ["REQUIRES_HUMAN_APPROVAL"] },
   { id: "bad", title: "Unknown supplier", amount: "$20,000", note: "Not approved, over the cap", codes: ["RECIPIENT_NOT_APPROVED", "EXCEEDS_TX_LIMIT", "EXCEEDS_DAILY_LIMIT", "EXCEEDS_MONTHLY_LIMIT"] },
 ];
 

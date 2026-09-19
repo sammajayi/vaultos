@@ -3,9 +3,13 @@
 import { useState } from "react";
 import type { Address } from "viem";
 import { useActive } from "@/components/Shell";
-import { Addr, Button, ConfirmButton, Empty, PageHead, Status, money } from "@/components/ui";
-import { useAgents } from "@/lib/hooks";
+import { useQueryClient } from "@tanstack/react-query";
+import { recipientMetadataHash } from "@vaultos/sdk";
+import { Addr, Button, ConfirmButton, Empty, ExplorerLink, Field, Input, Notice, PageHead, Status, money } from "@/components/ui";
+import { api } from "@/lib/api";
+import { useAgents, useRecipients } from "@/lib/hooks";
 import { useTreasuryWrites } from "@/lib/tx";
+import { useWallet } from "@/lib/wallet";
 
 export default function Agents() {
   const { address } = useActive();
@@ -43,6 +47,59 @@ export default function Agents() {
           </div>
         </article>
       ))}
+      <ResearchAgentPanel treasury={address} />
     </>
+  );
+}
+
+function ResearchAgentPanel({ treasury }: { treasury: string }) {
+  const qc = useQueryClient();
+  const { config } = useWallet();
+  const w = useTreasuryWrites(treasury as Address);
+  const recipients = useRecipients(treasury);
+  const [q, setQ] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [res, setRes] = useState<{ answer: string; txHash: string; amount: string; source: string } | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const ra = config?.researchAgent;
+  if (!ra) return null;
+  const approved = recipients.data?.some((r) => r.walletAddress.toLowerCase() === ra.toLowerCase() && r.status === "APPROVED");
+
+  return (
+    <section className="border-t border-rule py-6">
+      <h2 className="text-[20px] font-semibold">Research Agent</h2>
+      <p className="mt-1 max-w-[68ch] text-[14px] text-steel">
+        A second agent that sells answers for {config?.researchPrice} USDC each. The Payment Agent pays it from your treasury, so the same limits, supplier list and pause apply to machine-to-machine payments. Wallet <Addr value={ra} chars={6} />
+      </p>
+      {!approved ? (
+        <div className="mt-4">
+          <Notice tone="brass">The Research Agent isn't an approved supplier yet, so the contract would refuse to pay it.</Notice>
+          <div className="mt-3">
+            <Button tone="primary" busy={busy === "ap"} onClick={async () => {
+              setBusy("ap");
+              try { await w.addRecipient(ra as Address, recipientMetadataHash("Research Agent", "Agent services")); } catch {} finally { setBusy(null); }
+            }}>Approve Research Agent</Button>
+          </div>
+        </div>
+      ) : (
+        <form className="mt-4 max-w-xl space-y-3" onSubmit={async (e) => {
+          e.preventDefault(); setBusy("buy"); setErr(null); setRes(null);
+          try { setRes(await api(`/treasuries/${treasury}/research`, { body: { question: q } })); await qc.invalidateQueries(); }
+          catch (e2) { setErr((e2 as Error).message); } finally { setBusy(null); }
+        }}>
+          <Field label="Question" hint={`Costs ${config?.researchPrice} USDC, paid on-chain by the Payment Agent.`}>
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="What is Arc?" />
+          </Field>
+          <Button type="submit" tone="primary" busy={busy === "buy"} disabled={q.trim().length < 3}>Buy answer for {config?.researchPrice} USDC</Button>
+        </form>
+      )}
+      {err && <div className="mt-3 max-w-xl"><Notice tone="oxblood">{err}</Notice></div>}
+      {res && (
+        <div className="mt-4 max-w-xl rounded-md border border-rule bg-panel p-4">
+          <p className="text-[14px]">{res.answer}</p>
+          <p className="mt-2 text-[12.5px] text-steel">Paid {res.amount} USDC by the Payment Agent · <ExplorerLink hash={res.txHash} /></p>
+        </div>
+      )}
+    </section>
   );
 }

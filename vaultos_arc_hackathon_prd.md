@@ -6,6 +6,63 @@
 
 ---
 
+# 0. Locked MVP (supersedes anything broader below)
+
+**One-sentence definition:** VaultOS lets businesses give AI agents controlled access to their USDC treasury, while smart contracts enforce spending policies onchain.
+
+```text
+                    VAULTOS
+                       │
+          ┌────────────┴────────────┐
+          │                         │
+      AI PAYMENT AGENT         HUMAN APPROVER
+          │                         │
+          └────────────┬────────────┘
+                       ↓
+                POLICY ENGINE
+                       ↓
+             TREASURY CONTRACT
+                       ↓
+                      ARC
+                       ↓
+                     USDC
+```
+
+## The 7 things to build
+
+1. **Treasury smart contract**: deposit and withdraw USDC, register an authorized agent, add/remove approved recipients, set spending limits, emergency pause, execute authorized payments, emit payment and audit events.
+2. **Policy engine**: starts with only `maxTransaction`, `dailyLimit`, `approvedRecipients`, `agentActive`, `humanApprovalThreshold`. (Monthly limit and expiry were added; they are small extensions of the same engine.)
+3. **AI Payment Agent**: input `{ recipient, amount, description }`; output `{ decision, reason }` where decision is `AUTONOMOUS_APPROVAL`, `HUMAN_APPROVAL` or `REJECT`.
+4. **Human approval flow**: the dashboard separates "AWS, $750, executes automatically" from "Vendor X, $3,500, approval required". Approve triggers the transaction.
+5. **Treasury dashboard**: USDC balance, daily spending, monthly spending, active agents, spending policies, recent transactions, pending approvals, rejected transactions. No fake numbers; everything comes from the chain.
+6. **Security demonstration (mandatory)**: $750 AWS is approved and paid on Arc; $20,000 to an unknown wallet is rejected by the smart contract; $3,500 AWS needs human approval, then is approved and paid on Arc.
+7. **Agent-to-agent payment**: Payment Agent pays a Research Agent $0.25 USDC on Arc, under the same policy. One controlled machine-to-machine payment, not a marketplace.
+
+## Build order
+
+1. **Blockchain**: Arc connection, USDC, Treasury, tests, deploy. No AI yet.
+2. **Backend**: API for Treasury, Payments, Policies, Approvals, Agent.
+3. **Agent**: connect the AI to the backend. The AI never owns the treasury (`AI → Private Key → Treasury` is BAD; `AI → Payment Request → Policy Engine → Treasury Contract → Arc` is GOOD).
+4. **Frontend**: dashboard built around real blockchain transactions.
+5. **Demo**: three scripted scenarios (A autonomous $750, B human approval $3,500, C malicious $20,000 unknown recipient). Only after these are solid: cross-chain funding.
+
+## Implementation status (as built)
+
+| # | Item | Status |
+| - | ---- | ------ |
+| 1 | Treasury contract | Built. `Treasury.sol` + `TreasuryFactory.sol`; 41 Foundry tests |
+| 2 | Policy engine | Built as its own contract, `PolicyEngine.sol`, one per treasury. Treasury calls it on every payment; only the Treasury can change it |
+| 3 | Payment Agent | Built. `POST /treasuries/:a/agent/decide`; decision is deterministic from on-chain state, Claude (optional) only writes the explanation |
+| 4 | Human approval | Built. Approvals screen; owner signs `approvePayment` / `rejectPayment` |
+| 5 | Dashboard | Built. Rejected/blocked items appear in the activity feed and Transactions |
+| 6 | Security demo | Built and automated: `pnpm --filter @vaultos/api e2e` |
+| 7 | Agent-to-agent | Built. Research Agent sells answers at $0.25; verifies the on-chain payment before answering |
+| - | Arc testnet deployment | **Not done**: needs a funded key. Verified on local anvil only |
+
+Deviations from the sections below: `AgentRegistry` is folded into `PolicyEngine`; category restrictions are off-chain metadata; the hard per-payment cap (`maxTransaction`) is separate from the autonomous limit (`humanApprovalThreshold`); owner-approved payments count toward but are not blocked by daily/monthly limits.
+
+---
+
 # 1. Executive Summary
 
 VaultOS is an autonomous treasury and invoice-payment platform built on Arc.
@@ -292,7 +349,7 @@ Confirmed
 If the invoice exceeds the autonomous threshold:
 
 ```text
-Invoice: $4,500
+Invoice: $3,500
 
 Agent:
 Payment appears valid.
@@ -311,7 +368,7 @@ The UI displays:
 │ Approval Required                  │
 │                                    │
 │ Supplier       Supplier A          │
-│ Amount         $4,500              │
+│ Amount         $3,500              │
 │ Reason         Equipment           │
 │                                    │
 │ Agent checks                       │
@@ -978,7 +1035,7 @@ Activity:
 ```text
 ✓ AWS             $750
 ✓ Supplier A      $420
-⚠ Supplier B      $4,500
+⚠ Supplier B      $3,500
 ✕ Unknown         $1,200
 ```
 
@@ -1544,7 +1601,7 @@ Show Arc transaction.
 
 ---
 
-## Scene 4 — Submit $4,500 invoice
+## Scene 4 — Submit $3,500 invoice
 
 Agent says:
 
