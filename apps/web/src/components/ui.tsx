@@ -2,10 +2,48 @@
 
 import { useEffect, useRef, useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from "react";
 import { usd } from "@vaultos/sdk";
+import { Loading03Icon } from "hugeicons-react";
 import { useToasts } from "@/lib/tx";
 import { useWallet } from "@/lib/wallet";
 
 export const money = (v: string | bigint | null | undefined) => usd(BigInt(v ?? 0));
+
+export function Spinner({ size = 16, className = "" }: { size?: number; className?: string }) {
+  return <Loading03Icon size={size} className={`animate-spin motion-reduce:animate-none ${className}`} />;
+}
+
+/** Full-screen state while the vault is being read for the first time. */
+export function PageLoading({ label = "Reading the treasury contract…" }: { label?: string }) {
+  return (
+    <div className="grid min-h-dvh place-items-center">
+      <div className="flex flex-col items-center gap-3 text-steel">
+        <Spinner size={22} className="text-seal" />
+        <p className="text-[14px]">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+/** Inline state for a section still fetching its own data (a page already on screen). */
+export function Loading({ label = "Loading…" }: { label?: string }) {
+  return (
+    <div className="flex items-center gap-2 py-10 text-steel">
+      <Spinner size={16} />
+      <p className="text-[14px]">{label}</p>
+    </div>
+  );
+}
+
+/** The keyhole: a lock that opens only when the contract's checks line up. Brand mark. */
+export function Mark({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden className="shrink-0">
+      <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M12 8.6a2.1 2.1 0 1 1 0 4.2 2.1 2.1 0 0 1 0-4.2Z" fill="currentColor" />
+      <path d="M12 12.8 12 16.1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 export const short = (a: string | null | undefined, n = 4) => (a ? `${a.slice(0, n + 2)}…${a.slice(-n)}` : "");
 
@@ -84,6 +122,40 @@ export function Button({ tone = "quiet", busy, className = "", children, disable
   );
 }
 
+/** Standard wallet chip: shows the truncated address; opening it is the only way to disconnect. */
+export function WalletMenu({ address, onDisconnect }: { address: string; onDisconnect: () => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onKey); };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <Button aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+        <span className="font-mono text-[13px]">{short(address)}</span>
+      </Button>
+      {open && (
+        <div role="menu" className="absolute right-0 top-full z-20 mt-1 min-w-[150px] overflow-hidden rounded-md border border-rule bg-panel shadow-md">
+          <button
+            role="menuitem"
+            onClick={() => { setOpen(false); onDisconnect(); }}
+            className="block w-full px-3 py-2 text-left text-[13.5px] text-oxblood hover:bg-oxblood-tint"
+          >
+            Disconnect
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Field({ label, hint, error, children }: { label: string; hint?: string; error?: string; children: ReactNode }) {
   return (
     <label className="block">
@@ -125,9 +197,10 @@ export function PageHead({ title, sub, action }: { title: string; sub?: string; 
   );
 }
 
-export function Empty({ title, body, action }: { title: string; body: string; action?: ReactNode }) {
+export function Empty({ icon, title, body, action }: { icon?: ReactNode; title: string; body: string; action?: ReactNode }) {
   return (
     <div className="rounded-md border border-dashed border-rule px-6 py-10 text-center">
+      {icon && <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-sunk text-steel">{icon}</div>}
       <p className="font-medium">{title}</p>
       <p className="mx-auto mt-1 max-w-[46ch] text-steel">{body}</p>
       {action && <div className="mt-4">{action}</div>}
