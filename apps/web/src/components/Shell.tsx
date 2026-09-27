@@ -8,7 +8,16 @@ import { useWallet } from "@/lib/wallet";
 import { saveTreasury, savedTreasury, useSummary, useTreasuries } from "@/lib/hooks";
 import { useTreasuryWrites } from "@/lib/tx";
 import type { TreasurySummary } from "@/lib/api";
-import { Addr, Button, ConfirmButton } from "./ui";
+import {
+  Chart01Icon,
+  BankIcon,
+  Invoice01Icon,
+  CheckmarkCircle02Icon,
+  Activity01Icon,
+  Settings01Icon,
+  RoboticIcon,
+} from "hugeicons-react";
+import { Addr, Button, ConfirmButton, Mark, PageLoading, WalletMenu } from "./ui";
 
 type Active = { address: Address; summary: TreasurySummary | undefined; loading: boolean };
 const ActiveCtx = createContext<Active | null>(null);
@@ -19,13 +28,13 @@ export const useActive = () => {
 };
 
 const NAV = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/treasury", label: "Treasury" },
-  { href: "/invoices", label: "Invoices" },
-  { href: "/approvals", label: "Approvals" },
-  { href: "/transactions", label: "Transactions" },
-  { href: "/policies", label: "Policies" },
-  { href: "/agents", label: "Agents" },
+  { href: "/dashboard", label: "Dashboard", icon: Chart01Icon },
+  { href: "/treasury", label: "Treasury", icon: BankIcon },
+  { href: "/invoices", label: "Invoices", icon: Invoice01Icon },
+  { href: "/approvals", label: "Approvals", icon: CheckmarkCircle02Icon },
+  { href: "/transactions", label: "Transactions", icon: Activity01Icon },
+  { href: "/policies", label: "Policies", icon: Settings01Icon },
+  { href: "/agents", label: "Agents", icon: RoboticIcon },
 ];
 
 export function Shell({ children }: { children: ReactNode }) {
@@ -47,19 +56,28 @@ export function Shell({ children }: { children: ReactNode }) {
   }, [list.data, router]);
 
   const summary = useSummary(active ?? undefined);
-  if (!signedIn || !active) return <div className="grid min-h-dvh place-items-center text-steel">Loading your treasury…</div>;
+  if (!signedIn || !active) return <PageLoading />;
 
   return (
     <ActiveCtx.Provider value={{ address: active, summary: summary.data, loading: summary.isLoading }}>
       <div className="mx-auto grid min-h-dvh max-w-[1240px] gap-0 lg:grid-cols-[210px_1fr]">
         <aside className="border-b border-rule px-5 py-5 lg:sticky lg:top-0 lg:h-dvh lg:border-b-0 lg:border-r">
-          <p className="text-[17px] font-semibold tracking-tight">VaultOS</p>
+          <p className="flex items-center gap-2 text-[17px] font-semibold tracking-tight"><Mark size={19} />VaultOS</p>
           <nav aria-label="Main" className="-mx-2 mt-4 flex gap-1 overflow-x-auto lg:flex-col">
             {NAV.map((n) => {
               const on = path === n.href;
+              const Icon = n.icon;
               return (
-                <Link key={n.href} href={n.href} aria-current={on ? "page" : undefined} className={`flex items-center justify-between whitespace-nowrap rounded-md px-2.5 py-1.5 text-[14.5px] ${on ? "bg-ink font-medium text-white" : "text-steel hover:bg-sunk hover:text-ink"}`}>
-                  {n.label}
+                <Link
+                  key={n.href}
+                  href={n.href}
+                  aria-current={on ? "page" : undefined}
+                  className={`group flex items-center justify-between whitespace-nowrap rounded-md px-2.5 py-1.5 text-[14.5px] transition-all duration-150 ${on ? "bg-ink font-medium text-white" : "text-steel hover:translate-x-0.5 hover:bg-sunk hover:text-ink"}`}
+                >
+                  <span className="flex items-center gap-2">
+                    <Icon size={17} className={on ? "text-white" : "text-steel/70 transition-colors group-hover:text-seal"} />
+                    {n.label}
+                  </span>
                   {n.href === "/approvals" && !!summary.data?.pendingApprovals && (
                     <span className={`num ml-2 rounded px-1.5 text-[12px] font-semibold ${on ? "bg-white/20" : "bg-brass-tint text-brass"}`}>{summary.data.pendingApprovals}</span>
                   )}
@@ -105,7 +123,7 @@ function TopBar({ address, onDisconnect, active, network, list, onSwitch }: { ad
           ) : (
             <ConfirmButton label="Emergency pause" confirmLabel="Pause all agent payments" onConfirm={() => w.pause()} />
           ))}
-        <span className="text-[13px] text-steel">{address && <Addr value={address} />} · <button className="underline hover:text-ink" onClick={onDisconnect}>Disconnect</button></span>
+        {address && <WalletMenu address={address} onDisconnect={onDisconnect} />}
       </div>
     </div>
   );

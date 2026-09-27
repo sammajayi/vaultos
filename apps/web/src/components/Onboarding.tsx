@@ -5,7 +5,7 @@ import { useCreateTreasury } from "@/lib/tx";
 import { saveTreasury } from "@/lib/hooks";
 import { useWallet } from "@/lib/wallet";
 import { PolicyForm } from "./PolicyForm";
-import { Notice, Addr } from "./ui";
+import { Notice, Addr, Mark, WalletMenu } from "./ui";
 
 export function Onboarding() {
   const create = useCreateTreasury();
@@ -15,8 +15,8 @@ export function Onboarding() {
   return (
     <main className="mx-auto max-w-3xl px-5 py-12">
       <div className="flex items-center justify-between">
-        <p className="text-[15px] font-semibold tracking-tight">VaultOS</p>
-        <p className="text-[13px] text-steel">Signed in as {address && <Addr value={address} />} · <button className="underline" onClick={disconnect}>Disconnect</button></p>
+        <p className="flex items-center gap-2 text-[15px] font-semibold tracking-tight"><Mark />VaultOS</p>
+        {address && <WalletMenu address={address} onDisconnect={disconnect} />}
       </div>
       <h1 className="mt-10 text-[32px] font-semibold leading-tight tracking-tight">Set the rules, then create your treasury</h1>
       <p className="mt-2 max-w-[60ch] text-steel">

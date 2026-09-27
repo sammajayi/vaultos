@@ -5,7 +5,8 @@ import type { Address } from "viem";
 import { useActive } from "@/components/Shell";
 import { useQueryClient } from "@tanstack/react-query";
 import { recipientMetadataHash } from "@vaultos/sdk";
-import { Addr, Button, ConfirmButton, Empty, ExplorerLink, Field, Input, Notice, PageHead, Status, money } from "@/components/ui";
+import { RoboticIcon } from "hugeicons-react";
+import { Addr, Button, ConfirmButton, Empty, ExplorerLink, Field, Input, Loading, Notice, PageHead, Status, money } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useAgents, useRecipients } from "@/lib/hooks";
 import { useTreasuryWrites } from "@/lib/tx";
@@ -20,7 +21,7 @@ export default function Agents() {
   return (
     <>
       <PageHead title="Agents" sub="An agent is a separate wallet. It can ask the treasury to pay, and nothing else. It is never the owner." />
-      {isLoading ? <p className="text-steel">Loading…</p> : !data?.length ? <Empty title="No agents" body="Authorize an agent to let it handle invoices." /> : data.map((a) => (
+      {isLoading ? <Loading /> : !data?.length ? <Empty icon={<RoboticIcon size={20} />} title="No agents" body="Authorize an agent to let it handle invoices." /> : data.map((a) => (
         <article key={a.address} className="border-t border-rule py-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>

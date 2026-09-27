@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useActive } from "@/components/Shell";
 import { Tumblers, pinsFromDecision } from "@/components/Tumblers";
-import { Button, Drawer, Empty, ExplorerLink, Field, Input, Notice, PageHead, Section, Status, money } from "@/components/ui";
+import { Button, Drawer, Empty, ExplorerLink, Field, Input, Loading, Notice, PageHead, Section, Status, money } from "@/components/ui";
 import { ApiError, api, type Invoice } from "@/lib/api";
 import { useInvoices, useRecipients } from "@/lib/hooks";
 import { useToasts } from "@/lib/tx";
@@ -23,7 +23,7 @@ export default function InvoicesPage() {
     <>
       <PageHead title="Invoices" sub="Submit an invoice and the Payment Agent reviews it against your on-chain policy." action={<Button tone="primary" onClick={() => setCreating(true)}>New invoice</Button>} />
 
-      {isLoading ? <p className="text-steel">Loading…</p> : !data?.length ? (
+      {isLoading ? <Loading /> : !data?.length ? (
         <Empty title="No invoices yet" body="Add a supplier under Policies, then submit an invoice here for the agent to review." action={<Button tone="primary" onClick={() => setCreating(true)}>New invoice</Button>} />
       ) : (
         <div className="overflow-x-auto">

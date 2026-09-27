@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Alert02Icon, CheckmarkCircle02Icon, Cancel01Icon } from "hugeicons-react";
 import { useActive } from "@/components/Shell";
-import { Addr, Button, Empty, ExplorerLink, Notice, PageHead, ago, money } from "@/components/ui";
+import { Addr, Button, Empty, ExplorerLink, Loading, Notice, PageHead, ago, money } from "@/components/ui";
 import { useApprovals } from "@/lib/hooks";
 import { useTreasuryWrites } from "@/lib/tx";
 
@@ -16,8 +17,8 @@ export default function Approvals() {
     <>
       <PageHead title="Approvals" sub="Payments the agent may not make on its own. Nothing moves until you approve." />
       {summary?.paused && <div className="mb-4"><Notice tone="brass">The treasury is paused. Approvals are blocked until you resume it.</Notice></div>}
-      {isLoading ? <p className="text-steel">Loading…</p> : !data?.length ? (
-        <Empty title="Nothing needs your approval" body="When an invoice is larger than the agent's limit, it will wait here for your decision." />
+      {isLoading ? <Loading /> : !data?.length ? (
+        <Empty icon={<CheckmarkCircle02Icon size={20} />} title="Nothing needs your approval" body="When an invoice is larger than the agent's limit, it will wait here for your decision." />
       ) : (
         <ul className="space-y-5">
           {data.map((a) => {
@@ -65,9 +66,10 @@ export default function Approvals() {
 }
 
 function Line({ ok, text, warn }: { ok?: boolean; text: string; warn?: boolean }) {
+  const Icon = ok ? CheckmarkCircle02Icon : warn ? Alert02Icon : Cancel01Icon;
   return (
     <li className="flex items-center gap-2">
-      <span aria-hidden className={`font-bold ${ok ? "text-verdigris" : warn ? "text-brass" : "text-oxblood"}`}>{ok ? "✓" : warn ? "!" : "✕"}</span>
+      <Icon aria-hidden size={16} className={ok ? "text-verdigris" : warn ? "text-brass" : "text-oxblood"} />
       <span className={ok ? "" : warn ? "font-medium text-brass" : "font-medium text-oxblood"}>{text}{!ok && warn ? ": above the limit" : ""}</span>
     </li>
   );

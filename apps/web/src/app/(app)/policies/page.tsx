@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { Address, Hex } from "viem";
 import { useActive } from "@/components/Shell";
 import { PolicyForm } from "@/components/PolicyForm";
-import { Addr, Button, Empty, Field, Input, Notice, PageHead, Section, Status } from "@/components/ui";
+import { Addr, Button, Empty, Field, Input, Notice, PageHead, PageLoading, Section, Status } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 import { useRecipients } from "@/lib/hooks";
 import { useTreasuryWrites } from "@/lib/tx";
@@ -21,7 +21,7 @@ export default function Policies() {
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
   const valid = f.name.trim() && f.category.trim() && /^0x[a-fA-F0-9]{40}$/.test(f.walletAddress);
 
-  if (!summary) return <p className="py-10 text-steel">Reading the treasury contract…</p>;
+  if (!summary) return <PageLoading />;
   const expired = summary.policy.expiresAt !== "0" && Number(summary.policy.expiresAt) * 1000 < Date.now();
 
   return (

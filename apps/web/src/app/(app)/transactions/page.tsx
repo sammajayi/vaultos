@@ -1,7 +1,8 @@
 "use client";
 
+import { Activity01Icon } from "hugeicons-react";
 import { useActive } from "@/components/Shell";
-import { Addr, Empty, ExplorerLink, PageHead, Status, ago, money } from "@/components/ui";
+import { Addr, Empty, ExplorerLink, Loading, PageHead, Status, ago, money } from "@/components/ui";
 import { useTxs } from "@/lib/hooks";
 
 const TYPE: Record<string, string> = {
@@ -15,8 +16,8 @@ export default function Transactions() {
   return (
     <>
       <PageHead title="Transactions" sub="Every payment, block and rule change, rebuilt from the treasury contract's own events." />
-      {isLoading ? <p className="text-steel">Loading…</p> : !data?.length ? (
-        <Empty title="No transactions yet" body="Deposits, payments and blocked attempts will show up here as they happen." />
+      {isLoading ? <Loading /> : !data?.length ? (
+        <Empty icon={<Activity01Icon size={20} />} title="No transactions yet" body="Deposits, payments and blocked attempts will show up here as they happen." />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] border-collapse text-[14px]">

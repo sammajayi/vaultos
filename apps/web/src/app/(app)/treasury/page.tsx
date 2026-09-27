@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { Address } from "viem";
 import { erc20Abi, formatUsdc, parseUsdc } from "@vaultos/sdk";
 import { useActive } from "@/components/Shell";
-import { Button, ExplorerLink, Field, Input, Notice, PageHead, Section, money } from "@/components/ui";
+import { Button, ExplorerLink, Field, Input, Notice, PageHead, PageLoading, Section, money } from "@/components/ui";
 import { useTreasuryWrites, useChainAction } from "@/lib/tx";
 import { useWallet } from "@/lib/wallet";
 
@@ -26,7 +26,7 @@ export default function TreasuryPage() {
     enabled: !!me && !!publicClient && !!config,
     queryFn: () => publicClient!.readContract({ address: config!.usdc, abi: erc20Abi, functionName: "balanceOf", args: [me!] }),
   });
-  if (!summary) return <p className="py-10 text-steel">Reading the treasury contract…</p>;
+  if (!summary) return <PageLoading />;
 
   const isLocal = chain && chain.id !== 5042 && chain.id !== 5042002;
   const exceeds = amountOk(wd) && parseUsdc(wd) > BigInt(summary.balance);

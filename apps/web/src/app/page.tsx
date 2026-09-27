@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Landing } from "@/components/Landing";
 import { Onboarding } from "@/components/Onboarding";
+import { PageLoading } from "@/components/ui";
 import { useTreasuries } from "@/lib/hooks";
 import { useWallet } from "@/lib/wallet";
 
@@ -17,6 +18,6 @@ export default function Home() {
   }, [signedIn, list.data, router]);
 
   if (!signedIn) return <Landing />;
-  if (list.isLoading || (list.data && list.data.length > 0)) return <div className="grid min-h-dvh place-items-center text-steel">Loading your treasury…</div>;
+  if (list.isLoading || (list.data && list.data.length > 0)) return <PageLoading label="Loading your treasury…" />;
   return <Onboarding />;
 }
