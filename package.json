@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "description": "Autonomous treasury on Arc: AI agents propose payments, smart contracts decide.",
-  "packageManager": "pnpm@11.5.2",
+  "packageManager": "pnpm@9.15.9",
   "engines": {
     "node": ">=20"
   },
