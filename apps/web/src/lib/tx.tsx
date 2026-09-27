@@ -97,8 +97,9 @@ export function useTreasuryWrites(treasury: Address) {
 }
 
 export function useCreateTreasury() {
-  const { walletClient, publicClient, config } = useWallet();
+  const { walletClient, publicClient, config, address } = useWallet();
   const run = useChainAction();
+  const qc = useQueryClient();
   return async (policy: { maxTransactionAmount: bigint; dailyLimit: bigint; monthlyLimit: bigint; approvalThreshold: bigint; expiresAt: bigint; active: boolean }) => {
     if (!walletClient?.account || !config || !publicClient) throw new Error("Connect a wallet first.");
     const rc = await run(
@@ -116,6 +117,10 @@ export function useCreateTreasury() {
         const e = decodeEventLog({ abi: TreasuryFactoryAbi, data: l.data, topics: l.topics });
         if (e.eventName === "TreasuryCreated") {
           await api("/treasuries", { body: { address: e.args.treasury, creationTxHash: rc.transactionHash } });
+          // The generic invalidation inside `run` fires before this registration call, so the
+          // treasuries list is still refetched from cache as empty. Refresh it again now that
+          // the new treasury actually exists server-side, and wait for it before navigating.
+          await qc.invalidateQueries({ queryKey: ["treasuries", address] });
           return e.args.treasury as Address;
         }
       } catch {}
