@@ -9,12 +9,25 @@ import {
   http,
   type Address,
   type Chain,
+  type EIP1193Provider,
   type PublicClient,
   type WalletClient,
 } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
+import { WagmiProvider, createConfig, useConnectors } from "wagmi";
+import { injected } from "wagmi/connectors";
 import { arcMainnet, arcTestnet, loginMessage } from "@vaultos/sdk";
 import { api, setToken, type AppConfig } from "./api";
+
+// wagmi's injected() connector uses EIP-6963 provider discovery: every wallet extension
+// announces itself over an event, so we pick it up whenever it arrives instead of relying on a
+// single, possibly-stale snapshot of window.ethereum. The chain list here is fixed and separate
+// from viem's own `chain` (below), which follows the API's live config.
+const wagmiConfig = createConfig({
+  chains: [arcTestnet, arcMainnet],
+  connectors: [injected()],
+  transports: { [arcTestnet.id]: http(), [arcMainnet.id]: http() },
+});
 
 type Kind = "browser" | "demo";
 type Ctx = {
@@ -62,6 +75,14 @@ const safe = {
 };
 
 export function WalletProvider({ children }: { children: ReactNode }) {
+  return (
+    <WagmiProvider config={wagmiConfig}>
+      <WalletProviderInner>{children}</WalletProviderInner>
+    </WagmiProvider>
+  );
+}
+
+function WalletProviderInner({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [configError, setConfigError] = useState<string | null>(null);
   const [walletClient, setWalletClient] = useState<WalletClient | null>(null);
@@ -70,6 +91,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [signedIn, setSignedIn] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Reactive: wagmi appends a connector the instant a wallet extension announces itself
+  // (EIP-6963), so this stays accurate even if the extension injects after mount.
+  const connectors = useConnectors();
+  const hasBrowserWallet = connectors.length > 0;
 
   useEffect(() => {
     api<AppConfig>("/config").then(setConfig).catch((e) => setConfigError(e.message));
@@ -80,7 +106,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     () => (chain && config ? (createPublicClient({ chain, transport: http(config.rpcUrl) }) as PublicClient) : null),
     [chain, config],
   );
-  const hasBrowserWallet = typeof window !== "undefined" && !!(window as unknown as { ethereum?: unknown }).ethereum;
 
   const disconnect = useCallback(() => {
     setToken(null);
@@ -109,11 +134,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           account = acct.address;
           client = createWalletClient({ account: acct, chain, transport: http(config.rpcUrl) });
         } else {
-          const eth = (window as unknown as { ethereum?: { request: (a: { method: string }) => Promise<string[]> } }).ethereum;
-          if (!eth) throw new Error("No browser wallet found. Install MetaMask or use the demo wallet.");
+          const connector = connectors.find((c) => c.name === "MetaMask") ?? connectors[0];
+          if (!connector) throw new Error("No browser wallet found. Install MetaMask or use the demo wallet.");
+          const eth = (await connector.getProvider()) as EIP1193Provider;
           const [a] = await eth.request({ method: "eth_requestAccounts" });
           account = a as Address;
-          client = createWalletClient({ account, chain, transport: custom(eth as never) });
+          client = createWalletClient({ account, chain, transport: custom(eth) });
           try {
             await client.switchChain({ id: chain.id });
           } catch {
@@ -137,7 +163,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         setConnecting(false);
       }
     },
-    [config, chain],
+    [config, chain, connectors],
   );
 
   // Demo wallet reconnects silently (no popup); browser wallets ask again so the user stays in control.
