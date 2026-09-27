@@ -43,6 +43,11 @@ body { font-family: var(--font-sans); font-size: 15px; line-height: 1.5; -webkit
   .pin, .bolt { transition: none; transition-delay: 0ms; }
 }
 
+/* One settle-in moment per list: rows arrive in order, like entries landing in a ledger. */
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.rise { animation: rise 420ms cubic-bezier(0.2, 0.7, 0.3, 1) backwards; animation-delay: calc(var(--i, 0) * 45ms); }
+@media (prefers-reduced-motion: reduce) { .rise { animation: none; } }
+
 /* Native dialog used as a side drawer. */
 dialog.drawer {
   margin: 0 0 0 auto; height: 100dvh; max-height: 100dvh; width: min(560px, 100vw);
@@ -53,3 +58,9 @@ dialog.drawer::backdrop { background: rgba(23, 32, 51, 0.32); }
 
 /* Two-column checklist collapses on phones. */
 @media (max-width: 640px) { .checklist { grid-template-columns: 1fr !important; } }
+
+/* Faint ledger rule lines: the decision panel reads as a page from the treasury's own book. */
+.ledger {
+  background-image: repeating-linear-gradient(to bottom, transparent, transparent 27px, var(--color-rule) 27px, var(--color-rule) 28px);
+  background-position: 0 64px;
+}
