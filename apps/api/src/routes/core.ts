@@ -75,7 +75,9 @@ export async function coreRoutes(app: FastifyInstance) {
         create: { treasuryId: t.id, address: AGENT_ADDRESS.toLowerCase(), name: "Payment Agent", status: state.agent.active ? "ACTIVE" : "REVOKED" },
         update: { status: state.agent.active ? "ACTIVE" : "REVOKED" },
       });
-      await syncTreasury(address);
+      // Don't make the caller wait on a historical log scan (can be slow against a public testnet
+      // RPC, and isn't needed for the treasury to be usable — only the activity feed wants it).
+      syncTreasury(address).catch((err) => req.log.error({ err, address }, "post-create sync failed"));
       return { address: t.address };
     });
 
