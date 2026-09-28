@@ -102,7 +102,7 @@ Fill in `.env`. The API refuses to start if any of these is missing or malformed
 
 | Variable | Notes |
 | --- | --- |
-| `DATABASE_URL` | e.g. `postgresql://localhost:5432/vaultos` |
+| `DATABASE_URL` | e.g. `postgresql://<your-os-user>@localhost:5432/vaultos` |
 | `SESSION_SECRET` | any string of 8+ characters |
 | `ARC_RPC_URL`, `ARC_CHAIN_ID`, `ARC_USDC_ADDRESS` | see the chain sections below |
 | `TREASURY_FACTORY_ADDRESS` | printed by the deploy script |
@@ -111,16 +111,14 @@ Fill in `.env`. The API refuses to start if any of these is missing or malformed
 | `WEB_ORIGIN` | optional, comma-separated CORS origins. Defaults to `http://localhost:3100,http://localhost:3000`; add any other origin the web app is served from |
 | `RESEARCH_AGENT_ADDRESS` | optional, any address you own (it only receives the $0.25 payments) |
 
-The web app reads its own env file. Create `apps/web/.env.local` (public values only, never keys):
+The web app needs no env file for local dev: it calls the API at `http://localhost:4000` by default and gets
+the chain config from the API. If your API runs elsewhere, set `NEXT_PUBLIC_API_URL` in `apps/web/.env.local`.
 
-```bash
-NEXT_PUBLIC_API_URL=http://localhost:4000
-NEXT_PUBLIC_ARC_RPC_URL=https://rpc.testnet.arc.io
-NEXT_PUBLIC_ARC_CHAIN_ID=5042002
-NEXT_PUBLIC_USDC_ADDRESS=0x3600000000000000000000000000000000000000
-NEXT_PUBLIC_EXPLORER_URL=https://explorer.testnet.arc.io
-NEXT_PUBLIC_FACTORY_ADDRESS=<same as TREASURY_FACTORY_ADDRESS>
-```
+Notes for a fresh clone:
+
+- Replace `YOUR_OS_USER` in `DATABASE_URL` (Homebrew Postgres creates a role named after your macOS user, not `postgres`).
+- Generate the agent key with `cast wallet new` and fund that address with testnet USDC from the faucet.
+- `TREASURY_FACTORY_ADDRESS` is pre-filled with the shared Arc testnet factory; deploy your own only if you need to.
 
 ### 2. Pick a chain
 
@@ -132,7 +130,7 @@ DEPLOYER_PRIVATE_KEY=<anvil key> forge script scripts/DeployLocal.s.sol --rpc-ur
 ```
 
 Put the printed USDC and factory addresses in `.env` (`ARC_USDC_ADDRESS`, `TREASURY_FACTORY_ADDRESS`), set
-`ARC_CHAIN_ID=31337` and `ARC_RPC_URL=http://127.0.0.1:8545`, and mirror them in `apps/web/.env.local`.
+`ARC_CHAIN_ID=31337` and `ARC_RPC_URL=http://127.0.0.1:8545`, and restart the API.
 
 **Arc testnet:**
 
@@ -169,7 +167,8 @@ pnpm --filter @vaultos/api e2e    # full PRD demo with assertions (API must be r
 
 - **"Can't reach the VaultOS API" in the browser:** the API isn't running, `NEXT_PUBLIC_API_URL` doesn't match `API_PORT`, or the web origin isn't in `WEB_ORIGIN` (a CORS block looks the same as a down API; check the browser console). Restart the API after changing `.env`.
 - **`Invalid environment:` on API start:** the message lists the offending variables; compare with `.env.example`.
-- **Database errors:** make sure Postgres is running and you ran `pnpm db:push`.
+- **`P1010: User was denied access` / `DATABASE_URL not found`:** put your Postgres user in `DATABASE_URL` and run `pnpm db:push` again.
+- **Other database errors:** make sure Postgres is running and you ran `pnpm db:push`.
 
 The "Try with a demo wallet" button creates a throwaway key in the browser (testnet only).
 `ANTHROPIC_API_KEY` is optional; without it the agent's explanations are rule-generated.

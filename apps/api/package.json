@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
-    "db:push": "prisma db push --skip-generate && prisma generate",
+    "db:push": "node --env-file=../../.env node_modules/prisma/build/index.js db push --skip-generate && prisma generate",
+    "postinstall": "prisma generate",
     "typecheck": "tsc --noEmit -p .",
     "test": "tsx --test src/*.test.ts",
     "e2e": "tsx src/e2e.ts"
