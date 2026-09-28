@@ -33,7 +33,7 @@ export async function api<T>(path: string, init: { method?: string; body?: unkno
       body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
     });
   } catch {
-    throw new ApiError("Can't reach the VaultOS API. Check that it is running.", 0);
+    throw new ApiError(`Can't reach the VaultOS API at ${API_URL}. Check that it is running (pnpm dev) and that WEB_ORIGIN in .env includes ${typeof window !== "undefined" ? window.location.origin : "this site's origin"}.`, 0);
   }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new ApiError((data as { error?: string }).error ?? `Request failed (${res.status})`, res.status);

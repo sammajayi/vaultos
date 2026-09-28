@@ -108,7 +108,7 @@ Fill in `.env`. The API refuses to start if any of these is missing or malformed
 | `TREASURY_FACTORY_ADDRESS` | printed by the deploy script |
 | `AGENT_PRIVATE_KEY` | `0x` + 64 hex chars. A dedicated key, never the treasury owner |
 | `API_PORT` | optional, defaults to `4000` |
-| `WEB_ORIGIN` | optional, comma-separated CORS origins. Defaults to `http://localhost:3000`; the web app runs on `3100`, so set `http://localhost:3100` |
+| `WEB_ORIGIN` | optional, comma-separated CORS origins. Defaults to `http://localhost:3100,http://localhost:3000`; add any other origin the web app is served from |
 | `RESEARCH_AGENT_ADDRESS` | optional, any address you own (it only receives the $0.25 payments) |
 
 The web app reads its own env file. Create `apps/web/.env.local` (public values only, never keys):
@@ -167,8 +167,7 @@ pnpm --filter @vaultos/api e2e    # full PRD demo with assertions (API must be r
 
 ### Troubleshooting
 
-- **"API not available" in the browser:** the API isn't running, or `NEXT_PUBLIC_API_URL` doesn't match `API_PORT`.
-- **CORS errors:** add the web origin (e.g. `http://localhost:3100`) to `WEB_ORIGIN` and restart the API.
+- **"Can't reach the VaultOS API" in the browser:** the API isn't running, `NEXT_PUBLIC_API_URL` doesn't match `API_PORT`, or the web origin isn't in `WEB_ORIGIN` (a CORS block looks the same as a down API; check the browser console). Restart the API after changing `.env`.
 - **`Invalid environment:` on API start:** the message lists the offending variables; compare with `.env.example`.
 - **Database errors:** make sure Postgres is running and you ran `pnpm db:push`.
 

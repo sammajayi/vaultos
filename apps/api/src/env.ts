@@ -10,7 +10,7 @@ const addr = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
 const Env = z.object({
   DATABASE_URL: z.string().min(1),
   API_PORT: z.coerce.number().default(4000),
-  WEB_ORIGIN: z.string().default("http://localhost:3000"),
+  WEB_ORIGIN: z.string().default("http://localhost:3100,http://localhost:3000"),
   SESSION_SECRET: z.string().min(8),
   ARC_RPC_URL: z.string().url(),
   ARC_CHAIN_ID: z.coerce.number(),
