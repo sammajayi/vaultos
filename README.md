@@ -81,38 +81,96 @@ See [`docs/security.md`](./docs/security.md). In short: the contract is authorit
 server-side, never the owner, and never `NEXT_PUBLIC_*`; the LLM only rewrites the explanation and cannot
 change a decision; invoice text is treated as untrusted.
 
-## Run it
+## Run it locally
 
-Requires Node 20+, pnpm, Foundry, Postgres.
+### Prerequisites
+
+- Node 20+ and pnpm 9 (`corepack enable` picks up the pinned version)
+- [Foundry](https://book.getfoundry.sh) (`forge`, `anvil`)
+- Postgres running locally (default `localhost:5432`)
+
+### 1. Install and configure
 
 ```bash
 pnpm install
-cp .env.example .env            # fill in keys; see below
-createdb vaultos && pnpm db:push
-forge test                      # contracts
-pnpm --filter @vaultos/agent test
+cp .env.example .env            # monorepo root; read by the API and by forge scripts
+createdb vaultos
+pnpm db:push                    # creates the schema and generates the Prisma client
 ```
 
-**Local chain (fastest):**
+Fill in `.env`. The API refuses to start if any of these is missing or malformed:
+
+| Variable | Notes |
+| --- | --- |
+| `DATABASE_URL` | e.g. `postgresql://localhost:5432/vaultos` |
+| `SESSION_SECRET` | any string of 8+ characters |
+| `ARC_RPC_URL`, `ARC_CHAIN_ID`, `ARC_USDC_ADDRESS` | see the chain sections below |
+| `TREASURY_FACTORY_ADDRESS` | printed by the deploy script |
+| `AGENT_PRIVATE_KEY` | `0x` + 64 hex chars. A dedicated key, never the treasury owner |
+| `API_PORT` | optional, defaults to `4000` |
+| `WEB_ORIGIN` | optional, comma-separated CORS origins. Defaults to `http://localhost:3000`; the web app runs on `3100`, so set `http://localhost:3100` |
+| `RESEARCH_AGENT_ADDRESS` | optional, any address you own (it only receives the $0.25 payments) |
+
+The web app reads its own env file. Create `apps/web/.env.local` (public values only, never keys):
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_ARC_RPC_URL=https://rpc.testnet.arc.io
+NEXT_PUBLIC_ARC_CHAIN_ID=5042002
+NEXT_PUBLIC_USDC_ADDRESS=0x3600000000000000000000000000000000000000
+NEXT_PUBLIC_EXPLORER_URL=https://explorer.testnet.arc.io
+NEXT_PUBLIC_FACTORY_ADDRESS=<same as TREASURY_FACTORY_ADDRESS>
+```
+
+### 2. Pick a chain
+
+**Local chain (fastest, no faucet):**
 
 ```bash
 anvil &
 DEPLOYER_PRIVATE_KEY=<anvil key> forge script scripts/DeployLocal.s.sol --rpc-url http://127.0.0.1:8545 --broadcast
-# put the printed USDC / FACTORY addresses in .env, set ARC_CHAIN_ID=31337, ARC_RPC_URL=http://127.0.0.1:8545
-# set RESEARCH_AGENT_ADDRESS to any address you own (it only receives the $0.25 payments)
-pnpm --filter @vaultos/api start &
-pnpm --filter @vaultos/api e2e   # runs the whole PRD demo with assertions
-pnpm --filter @vaultos/web dev   # http://localhost:3100
 ```
+
+Put the printed USDC and factory addresses in `.env` (`ARC_USDC_ADDRESS`, `TREASURY_FACTORY_ADDRESS`), set
+`ARC_CHAIN_ID=31337` and `ARC_RPC_URL=http://127.0.0.1:8545`, and mirror them in `apps/web/.env.local`.
 
 **Arc testnet:**
 
 ```bash
-# 1. fund DEPLOYER and AGENT wallets with testnet USDC (gas): https://faucet.circle.com
+# 1. fund the DEPLOYER and AGENT wallets with testnet USDC (gas): https://faucet.circle.com
 # 2. deploy
 forge script scripts/Deploy.s.sol --rpc-url https://rpc.testnet.arc.io --broadcast
-# 3. set TREASURY_FACTORY_ADDRESS, ARC_CHAIN_ID=5042002, ARC_RPC_URL, ARC_USDC_ADDRESS=0x3600000000000000000000000000000000000000
+# 3. set TREASURY_FACTORY_ADDRESS, ARC_CHAIN_ID=5042002, ARC_RPC_URL,
+#    ARC_USDC_ADDRESS=0x3600000000000000000000000000000000000000
 ```
+
+### 3. Start the services
+
+The API and the web app are separate processes; the web app shows errors until the API is up.
+
+```bash
+pnpm dev                          # API (:4000) and web (:3100) together, via turbo
+# or individually:
+pnpm --filter @vaultos/api dev    # API with auto-reload
+pnpm --filter @vaultos/web dev    # http://localhost:3100
+```
+
+Check the API: `curl localhost:4000/health` should return `200`.
+
+### 4. Verify
+
+```bash
+forge test                        # contracts
+pnpm test                         # agent and API unit tests
+pnpm --filter @vaultos/api e2e    # full PRD demo with assertions (API must be running, local chain)
+```
+
+### Troubleshooting
+
+- **"API not available" in the browser:** the API isn't running, or `NEXT_PUBLIC_API_URL` doesn't match `API_PORT`.
+- **CORS errors:** add the web origin (e.g. `http://localhost:3100`) to `WEB_ORIGIN` and restart the API.
+- **`Invalid environment:` on API start:** the message lists the offending variables; compare with `.env.example`.
+- **Database errors:** make sure Postgres is running and you ran `pnpm db:push`.
 
 The "Try with a demo wallet" button creates a throwaway key in the browser (testnet only).
 `ANTHROPIC_API_KEY` is optional; without it the agent's explanations are rule-generated.
