@@ -1,25 +1,28 @@
 @import "tailwindcss";
 
-/* VaultOS design tokens. Mineral ground, slate ink, and four state colours that each mean one thing:
-   cobalt = you act, verdigris = passed, brass = owner must decide, oxblood = refused. */
+/* VaultOS design tokens. Cool canvas, white working surfaces, deep navy ink, and ultramarine as the one loud colour.
+   State colours each mean one thing: ultramarine = you act, verdigris = passed, brass = owner must decide, oxblood = refused. */
 @theme inline {
-  --color-ground: #eceff0;
-  --color-panel: #f9fafa;
-  --color-sunk: #e2e7e8;
-  --color-ink: #172033;
-  --color-steel: #566577;
-  --color-rule: #cfd7d8;
-  --color-seal: #24439b;
-  --color-seal-dark: #1a3277;
-  --color-seal-tint: #dfe6f6;
-  --color-verdigris: #17705a;
-  --color-verdigris-tint: #d8ede6;
-  --color-brass: #8f6209;
-  --color-brass-tint: #f3e6c8;
-  --color-oxblood: #a2352b;
-  --color-oxblood-tint: #f3d9d5;
-  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --color-ground: #f1f3f9;
+  --color-panel: #ffffff;
+  --color-sunk: #eceff6;
+  --color-ink: #0d1433;
+  --color-steel: #5a6480;
+  --color-rule: #e1e5ef;
+  --color-seal: #3a36e0;
+  --color-seal-dark: #2a26b8;
+  --color-seal-tint: #e9e8ff;
+  --color-night: #0d1433;
+  --color-night-2: #1a2250;
+  --color-verdigris: #0c8a5f;
+  --color-verdigris-tint: #dcf3ea;
+  --color-brass: #a86400;
+  --color-brass-tint: #fcecd0;
+  --color-oxblood: #cc3340;
+  --color-oxblood-tint: #fde2e4;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-geist), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 :root { color-scheme: light; }
@@ -27,10 +30,25 @@
 html, body { background: var(--color-ground); color: var(--color-ink); }
 body { font-family: var(--font-sans); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
 
+/* Headings and money speak in the display face; everything else stays quiet. */
+h1, h2, .display { font-family: var(--font-display); font-optical-sizing: auto; letter-spacing: -0.02em; }
+
+/* The standard working surface: every section of the app sits on one of these. */
+.card { background: var(--color-panel); border: 1px solid var(--color-rule); border-radius: 14px; box-shadow: 0 1px 2px rgba(13, 20, 51, 0.04); }
+
+/* The one loud surface: the vault itself. Used for the balance and the landing stage. */
+.vault {
+  background-color: var(--color-night);
+  background-image:
+    radial-gradient(120% 90% at 100% 0%, rgba(58, 54, 224, 0.95) 0%, rgba(58, 54, 224, 0) 60%),
+    radial-gradient(80% 70% at 0% 100%, rgba(58, 54, 224, 0.35) 0%, rgba(58, 54, 224, 0) 70%);
+  color: #fff;
+}
+
 /* Amounts line up in columns. */
 .num { font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; }
 
-:focus-visible { outline: 2px solid var(--color-seal); outline-offset: 2px; border-radius: 4px; }
+:focus-visible { outline: 2px solid var(--color-seal); outline-offset: 2px; border-radius: 6px; }
 
 ::selection { background: var(--color-seal-tint); }
 
@@ -52,15 +70,21 @@ body { font-family: var(--font-sans); font-size: 15px; line-height: 1.5; -webkit
 dialog.drawer {
   margin: 0 0 0 auto; height: 100dvh; max-height: 100dvh; width: min(560px, 100vw);
   border: 0; padding: 0; background: var(--color-panel); color: var(--color-ink);
-  box-shadow: -1px 0 0 var(--color-rule);
+  box-shadow: -24px 0 60px rgba(13, 20, 51, 0.18);
 }
-dialog.drawer::backdrop { background: rgba(23, 32, 51, 0.32); }
+dialog.drawer::backdrop { background: rgba(13, 20, 51, 0.45); backdrop-filter: blur(2px); }
 
 /* Two-column checklist collapses on phones. */
 @media (max-width: 640px) { .checklist { grid-template-columns: 1fr !important; } }
 
 /* Faint ledger rule lines: the decision panel reads as a page from the treasury's own book. */
 .ledger {
-  background-image: repeating-linear-gradient(to bottom, transparent, transparent 27px, var(--color-rule) 27px, var(--color-rule) 28px);
+  background-image: repeating-linear-gradient(to bottom, transparent, transparent 27px, var(--color-sunk) 27px, var(--color-sunk) 28px);
   background-position: 0 64px;
 }
+
+/* Tables inside cards: a tinted header band, generous rows, edge padding. */
+.data th { background: var(--color-sunk); padding-top: 10px; padding-bottom: 10px; }
+.data th:first-child, .data td:first-child { padding-left: 20px; }
+.data th:last-child, .data td:last-child { padding-right: 20px; }
+.data tbody tr:last-child { border-bottom: 0; }

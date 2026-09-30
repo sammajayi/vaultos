@@ -22,7 +22,7 @@ export default function Agents() {
     <>
       <PageHead title="Agents" sub="An agent is a separate wallet. It can ask the treasury to pay, and nothing else. It is never the owner." />
       {isLoading ? <Loading /> : !data?.length ? <Empty icon={<RoboticIcon size={20} />} title="No agents" body="Authorize an agent to let it handle invoices." /> : data.map((a) => (
-        <article key={a.address} className="border-t border-rule py-6">
+        <article key={a.address} className="card mb-5 p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h2 className="text-[20px] font-semibold">{a.name}</h2>
@@ -96,7 +96,7 @@ function ResearchAgentPanel({ treasury }: { treasury: string }) {
       )}
       {err && <div className="mt-3 max-w-xl"><Notice tone="oxblood">{err}</Notice></div>}
       {res && (
-        <div className="mt-4 max-w-xl rounded-md border border-rule bg-panel p-4">
+        <div className="card mt-4 max-w-xl p-5">
           <p className="text-[14px]">{res.answer}</p>
           <p className="mt-2 text-[12.5px] text-steel">Paid {res.amount} USDC by the Payment Agent · <ExplorerLink hash={res.txHash} /></p>
         </div>

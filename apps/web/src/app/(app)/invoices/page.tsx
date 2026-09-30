@@ -26,10 +26,10 @@ export default function InvoicesPage() {
       {isLoading ? <Loading /> : !data?.length ? (
         <Empty title="No invoices yet" body="Add a supplier under Policies, then submit an invoice here for the agent to review." action={<Button tone="primary" onClick={() => setCreating(true)}>New invoice</Button>} />
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] border-collapse text-[14.5px]">
+        <div className="card overflow-x-auto">
+          <table className="data w-full min-w-[720px] border-collapse text-[14.5px]">
             <thead>
-              <tr className="border-b border-rule text-left text-[13px] font-medium text-steel">
+              <tr className="border-b border-rule text-left text-[12.5px] font-medium text-steel">
                 <th className="py-2 pr-4 font-medium">Invoice</th><th className="pr-4 font-medium">Supplier</th><th className="pr-4 text-right font-medium">Amount</th><th className="pr-4 font-medium">Due</th><th className="pr-4 font-medium">Agent decision</th><th className="font-medium">Status</th>
               </tr>
             </thead>
@@ -85,7 +85,7 @@ function NewInvoice({ treasury, onDone }: { treasury: string; onDone: (id: strin
       } catch (e2) { setErr((e2 as Error).message); } finally { setBusy(false); }
     }}>
       <Field label="Supplier">
-        <select value={pick} onChange={(e) => setPick(e.target.value)} className="h-10 w-full rounded-md border border-rule bg-white px-3">
+        <select value={pick} onChange={(e) => setPick(e.target.value)} className="h-11 w-full rounded-lg border border-rule bg-white px-3">
           <option value="">Someone not on my approved list</option>
           {approved.map((r) => <option key={r.id} value={r.id}>{r.name} ({r.category})</option>)}
         </select>

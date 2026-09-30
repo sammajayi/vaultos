@@ -25,13 +25,13 @@ export default function Approvals() {
             const d = a.invoice.agentDecision;
             const id = BigInt(a.onchainRequestId);
             return (
-              <li key={a.id} className="rounded-lg border border-brass/50 bg-panel">
-                <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-rule px-5 py-4">
+              <li key={a.id} className="card overflow-hidden border-brass/50">
+                <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-brass/30 bg-brass-tint/40 px-5 py-4">
                   <div>
                     <p className="text-[18px] font-semibold">{a.invoice.supplierName}</p>
                     <p className="text-[13.5px] text-steel">{a.invoice.invoiceNumber} · due {a.invoice.dueDate} · requested {ago(a.createdAt)} · <Addr value={a.recipient} /></p>
                   </div>
-                  <p className="num text-[30px] font-semibold tracking-tight">{money(a.amount)}</p>
+                  <p className="display num text-[34px] font-bold tracking-tight">{money(a.amount)}</p>
                 </div>
                 <div className="grid gap-6 px-5 py-4 sm:grid-cols-2">
                   <div>
