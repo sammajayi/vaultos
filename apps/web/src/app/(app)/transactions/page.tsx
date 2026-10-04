@@ -19,10 +19,10 @@ export default function Transactions() {
       {isLoading ? <Loading /> : !data?.length ? (
         <Empty icon={<Activity01Icon size={20} />} title="No transactions yet" body="Deposits, payments and blocked attempts will show up here as they happen." />
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] border-collapse text-[14px]">
+        <div className="card overflow-x-auto">
+          <table className="data w-full min-w-[900px] border-collapse text-[14px]">
             <thead>
-              <tr className="border-b border-rule text-left text-[13px] text-steel">
+              <tr className="border-b border-rule text-left text-[12.5px] text-steel">
                 {["Type", "Amount", "Recipient", "Invoice", "Agent", "Policy", "Transaction", "When", "Status"].map((h, i) => <th key={h} className={`py-2 pr-4 font-medium ${i === 1 ? "text-right" : ""}`}>{h}</th>)}
               </tr>
             </thead>

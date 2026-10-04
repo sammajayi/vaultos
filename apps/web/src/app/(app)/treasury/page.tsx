@@ -37,9 +37,9 @@ export default function TreasuryPage() {
     <>
       <PageHead title="Treasury" sub="Only you, as owner, can add or withdraw funds. The agent can neither deposit nor withdraw." />
 
-      <dl className="grid gap-x-10 gap-y-4 pb-8 sm:grid-cols-2">
+      <dl className="card grid gap-x-10 gap-y-5 p-6 sm:grid-cols-2">
         <div><dt className="text-[13px] text-steel">Treasury contract</dt><dd><ExplorerLink address={address}>{address}</ExplorerLink></dd></div>
-        <div><dt className="text-[13px] text-steel">Balance</dt><dd className="num text-[24px] font-semibold">{money(summary.balance)}</dd></div>
+        <div><dt className="text-[13px] text-steel">Balance</dt><dd className="display num text-[30px] font-bold leading-tight">{money(summary.balance)}</dd></div>
         <div><dt className="text-[13px] text-steel">Status</dt><dd>{summary.paused ? "Paused. Agent payments are blocked." : "Running"}</dd></div>
         <div><dt className="text-[13px] text-steel">Your wallet holds</dt><dd className="num">{mine.data !== undefined ? money(mine.data) : "…"} USDC</dd></div>
       </dl>
